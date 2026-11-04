@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>이야기 서재</title>
+    <meta name="description" content="코브와 인간, 그리고 세 번의 기회에 관한 이야기. 책장에서 책을 꺼내 읽어보세요." />
+    <meta name="theme-color" content="#1a1210" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <canvas id="shelf"></canvas>
+
+    <header id="hint">
+      <p>책을 눌러 꺼내 읽어보세요 · 휠, 드래그, 화살표로 위아래 책장 보기</p>
+    </header>
+
+    <nav id="cases" class="hidden" aria-label="책장 목록"></nav>
+    <button id="edge-up" class="edge hidden" aria-label="위 책장">▲ 위 책장</button>
+    <button id="edge-down" class="edge hidden" aria-label="아래 책장">▼ 아래 책장</button>
+
+    <div id="tip" class="hidden"></div>
+    <div id="toast"></div>
+
+    <div id="reader" class="hidden">
+      <div class="stage">
+        <div class="book"></div>
+      </div>
+      <button class="close" aria-label="닫기">책 덮기 ✕</button>
+      <div class="nav">
+        <button class="nav-prev" aria-label="이전 쪽">◀</button>
+        <span class="progress"></span>
+        <button class="nav-next" aria-label="다음 쪽">▶</button>
+      </div>
+    </div>
+
+    <!-- 쪽 나누기 측정용 (화면 밖) -->
+    <div id="measure" aria-hidden="true"></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
