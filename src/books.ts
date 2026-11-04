@@ -41,7 +41,7 @@ export interface BookDef {
   links?: BookLink[];
 }
 
-export const SERIES = '세상이 눈을 뜬 날';
+export const SERIES = '아르카 테일';
 
 export const CASES: BookCase[] = [
   {
@@ -103,6 +103,15 @@ export const BOOKS: BookDef[] = [
   { id: 'seoyun', shelf: 'lore', title: '서윤의 책', subtitle: '기억하는 아이', color: '#8a5a7c', emblem: 'brush' },
 ];
 
+/** 큰 서사 권 번호 (1부터). 세계의 조각 책이면 0 */
+export const volOf = (b: BookDef) => (b.shelf === 'saga' ? BOOKS.filter((x) => x.shelf === 'saga').indexOf(b) + 1 : 0);
+/** 큰 서사의 다음 권 (마지막 권·세계의 조각이면 없음) */
+export const nextVolume = (b: BookDef) => {
+  const v = volOf(b);
+  if (!v) return undefined;
+  const next = BOOKS.filter((x) => x.shelf === 'saga')[v];
+  return next && !isLocked(next) ? next : undefined;
+};
 export const caseOf = (b: BookDef) => b.case ?? CASES[0].id;
 export const bookById = (id: string) => BOOKS.find((b) => b.id === id);
 export const isLocked = (b: BookDef) => !b.chapters || b.chapters.length === 0;

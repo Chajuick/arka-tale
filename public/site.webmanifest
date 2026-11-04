@@ -1,0 +1,16 @@
+{
+  "name": "아르카 테일 — 이야기 서재",
+  "short_name": "아르카 테일",
+  "description": "코브와 인간, 그리고 세 번의 기회에 관한 이야기. 책장에서 책을 꺼내 읽는 이야기 서재.",
+  "lang": "ko",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1a1210",
+  "theme_color": "#1a1210",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

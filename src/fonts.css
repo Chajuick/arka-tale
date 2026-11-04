@@ -9,3 +9,9 @@
   src: url('../node_modules/galmuri/dist/Galmuri14.woff2') format('woff2');
   font-display: swap;
 }
+/* Neo둥근모 Pro (SIL OFL-1.1, src/fonts/NeoDunggeunmoPro-LICENSE.txt): 인트로·공유 이미지 제목용. 16px 정수배로 써야 또렷함 */
+@font-face {
+  font-family: 'NeoDunggeunmo Pro';
+  src: url('../node_modules/neodgm-pro/neodgm_pro.woff2') format('woff2');
+  font-display: block;
+}

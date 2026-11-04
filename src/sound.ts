@@ -32,6 +32,26 @@ function swish(dur: number, from: number, to: number, vol: number, q = 0.8) {
   src.stop(t0 + dur + 0.02);
 }
 
+/** 인트로 종소리: 맑은 음 몇 개가 차례로 */
+export function playChime() {
+  const c = ensure();
+  const t0 = c.currentTime;
+  [784, 988, 1175, 1568].forEach((f, i) => {
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = 'sine';
+    o.frequency.value = f;
+    const t = t0 + i * 0.12;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.08, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+    o.connect(g).connect(c.destination);
+    o.start(t);
+    o.stop(t + 1.7);
+  });
+  swish(1.2, 3000, 600, 0.05, 0.5);
+}
+
 export const playFlip = () => swish(0.35, 1800, 4200, 0.18, 0.7);
 export const playSlide = () => swish(0.4, 500, 1400, 0.12, 1.2);
 export const playThud = () => swish(0.18, 300, 120, 0.2, 1.5);

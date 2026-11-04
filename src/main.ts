@@ -6,19 +6,75 @@ import './style.css';
 import { CASES, bookById, isLocked, type BookDef } from './books';
 import { Reader } from './reader';
 import { Shelf } from './shelf';
-import { playSlide, playThud } from './sound';
+import { playChime, playSlide, playThud } from './sound';
 
 const $ = (id: string) => document.getElementById(id)!;
 
+const OG_MODE = new URLSearchParams(location.search).has('og');
+
+/** 인트로 제목: 한 글자씩 떠오르게 */
+function setupIntro() {
+  const title = document.querySelector('.intro-title') as HTMLElement;
+  title.innerHTML = [...'아르카 테일']
+    .map((ch, i) => `<span style="animation-delay:${0.5 + i * 0.12}s">${ch === ' ' ? '&nbsp;' : ch}</span>`)
+    .join('');
+  const motes = document.querySelector('.intro-motes') as HTMLElement;
+  for (let i = 0; i < 40; i++) {
+    const m = document.createElement('i');
+    m.style.left = `${Math.random() * 100}%`;
+    m.style.animationDelay = `${-Math.random() * 12}s`;
+    m.style.animationDuration = `${8 + Math.random() * 8}s`;
+    m.style.setProperty('--drift', `${(Math.random() - 0.5) * 80}px`);
+    motes.appendChild(m);
+  }
+}
+
 async function start() {
+  if (!OG_MODE) setupIntro();
   // 책등·표지 글자를 캔버스에 그리기 전에 폰트 준비
   await Promise.all([
     document.fonts.load('24px Galmuri11'),
+    document.fonts.load('80px "NeoDunggeunmo Pro"'),
     document.fonts.load('bold 30px "Gowun Batang"'),
     document.fonts.load('16px "Gowun Batang"'),
   ]).catch(() => undefined);
 
   const shelf = new Shelf($('shelf') as HTMLCanvasElement);
+
+  // 공유 미리보기 촬영용 구도: 인트로·안내 없이, 책장을 오른쪽에 두고 왼쪽에 제목 카드
+  if (OG_MODE) {
+    document.body.classList.remove('in-intro');
+    document.body.classList.add('og');
+    $('intro').remove();
+    $('og-card').classList.remove('hidden');
+    shelf.skipIntro();
+    shelf.viewShiftX = -3.1;
+    return;
+  }
+
+  // 인트로: 준비되면 "들어가기" → 종소리 + 책장 앞으로 다가가며 화면이 열림
+  const intro = $('intro');
+  const enterBtn = intro.querySelector('.intro-enter') as HTMLButtonElement;
+  enterBtn.disabled = false;
+  enterBtn.textContent = '서재에 들어가기';
+  let entered = false;
+  const enter = () => {
+    if (entered) return;
+    entered = true;
+    playChime();
+    intro.classList.add('leaving');
+    void shelf.enter();
+    window.setTimeout(() => {
+      intro.remove();
+      document.body.classList.remove('in-intro');
+    }, 1500);
+    window.removeEventListener('keydown', onKey);
+  };
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') enter();
+  };
+  intro.addEventListener('click', enter);
+  window.addEventListener('keydown', onKey);
   const reader = new Reader();
 
   // 책장 목록: 책장이 둘 이상일 때만 표시
@@ -102,6 +158,21 @@ async function start() {
     await reader.close();
     if (current) shelf.snapBack(current.id);
     linking = false;
+    await openBook(to);
+  };
+
+  // 다음 권: 지금 책을 덮어 제자리에 꽂고 → 다음 권을 꺼내 펼침
+  reader.onNext = async (id) => {
+    const to = bookById(id);
+    if (!to || isLocked(to)) return;
+    linking = true;
+    await reader.close();
+    linking = false;
+    if (current) {
+      playSlide();
+      await shelf.putBack(current.id);
+      playThud();
+    }
     await openBook(to);
   };
 

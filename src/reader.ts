@@ -1,5 +1,5 @@
 // 2D 읽기 화면: 자동 쪽 나누기 + 3D 페이지 넘김
-import { SERIES, bookById, isLocked, type BookDef } from './books';
+import { SERIES, bookById, isLocked, nextVolume, volOf, type BookDef } from './books';
 import { chapterArt, emblemDataURL } from './art';
 import { getChapter } from './content';
 import { coverCanvas } from './shelf';
@@ -10,6 +10,11 @@ const PAGE_H = 640;
 
 type Block = { html: string; cls?: string };
 
+/** 장 첫 문단의 첫 글자를 살짝 크게 (앞에 태그가 있으면 건너뜀, 따옴표로 시작하면 그대로) */
+function initial(html: string) {
+  return html.replace(/^((?:<[^>]+>)*)([^<\s"'“‘])/, '$1<span class="initial">$2</span>');
+}
+
 export class Reader {
   private root = document.getElementById('reader')!;
   private bookEl = this.root.querySelector('.book') as HTMLElement;
@@ -17,8 +22,12 @@ export class Reader {
   private pages: string[] = []; // 각 쪽의 HTML
   private spread = 0; // 0 = 표지(오른쪽만)
   private flipping = false;
+  private nextBook: BookDef | undefined; // 큰 서사의 다음 권
+  private endIndex = -1; // '끝' 쪽 위치
   onClose?: () => void;
   onLink?: (id: string) => void;
+  /** 다음 권으로 이어 읽기 */
+  onNext?: (id: string) => void;
 
   constructor() {
     this.root.querySelector('.close')!.addEventListener('click', () => this.close());
@@ -32,6 +41,11 @@ export class Reader {
     });
     // 쪽 클릭: 왼쪽 절반 = 이전, 오른쪽 절반 = 다음 / 스와이프
     this.bookEl.addEventListener('click', (e) => {
+      const nx = (e.target as HTMLElement).closest('[data-next]') as HTMLElement | null;
+      if (nx) {
+        e.stopPropagation();
+        return this.onNext?.(nx.dataset.next!);
+      }
       const a = (e.target as HTMLElement).closest('[data-link]') as HTMLElement | null;
       if (a) {
         e.stopPropagation();
@@ -62,7 +76,7 @@ export class Reader {
         { html: `<img class="art" src="${chapterArt(ref)}" width="220" height="130" alt="">`, cls: 'art-wrap' },
         { html: ch.title.replace(/^(제\d+장|마지막 장)\.?\s*/, '<small>$1</small>'), cls: 'ch-title' },
       ];
-      ch.paragraphs.forEach((p, i) => bl.push({ html: p, cls: i === 0 ? 'p first' : 'p' }));
+      ch.paragraphs.forEach((p, i) => bl.push({ html: i === 0 ? initial(p) : p, cls: i === 0 ? 'p first' : 'p' }));
       for (const l of b.links ?? []) {
         if (l.after !== ref) continue;
         const to = bookById(l.to);
@@ -125,25 +139,33 @@ export class Reader {
   }
 
   private titlePageHTML(b: BookDef) {
+    const vol = volOf(b);
     return `<div class="title-page">
-      <img class="tp-emblem" src="${emblemDataURL(b.emblem, b.shelf === 'saga' ? '#b08a30' : '#8a6a40')}" alt="">
-      <div class="tp-series">${b.shelf === 'saga' ? SERIES : '세계의 조각'}</div>
+      <div class="tp-series"><i></i>${SERIES}<i></i></div>
+      <img class="tp-emblem" src="${emblemDataURL(b.emblem, vol ? '#b08a30' : '#8a6a40')}" alt="">
       <h1>${b.title}</h1>
+      <div class="tp-rule"></div>
       ${b.subtitle ? `<div class="tp-sub">${b.subtitle}</div>` : ''}
-      <div class="tp-orn">❦</div>
+      <div class="tp-vol">${vol ? `제 ${vol} 권` : '세계의 조각'}</div>
     </div>`;
   }
 
   private endHTML() {
-    return `<div class="end-page"><div class="tp-orn">❦</div><div>— 끝 —</div><small>책을 덮으려면 다음 쪽으로</small></div>`;
+    const nb = this.nextBook;
+    const next = nb
+      ? `<div class="next-vol" data-next="${nb.id}"><small>다음 권 · 제 ${volOf(nb)} 권</small><b>『${nb.title}』</b><span>이어 읽기 →</span></div>`
+      : '<small>책장으로 돌아가려면 다음 쪽으로</small>';
+    return `<div class="end-page"><div class="tp-orn">❦</div><div>— 끝 —</div>${next}</div>`;
   }
 
   // ───────── 열기 / 닫기 ─────────
 
   open(b: BookDef) {
+    this.nextBook = nextVolume(b);
     // 쪽 구성: [표지][면지(빈)][속표지][본문...][끝][뒤표지]
     const body = this.paginate(b);
     this.pages = [this.coverHTML(b), '<div class="endpaper"></div>', this.titlePageHTML(b), ...body, this.endHTML()];
+    this.endIndex = this.pages.length - 1;
     if (this.pages.length % 2 === 1) this.pages.push('<div class="blank"></div>');
     this.pages.push(`<div class="back-cover" style="background:${b.color}"></div>`);
     this.spread = 0;
@@ -187,6 +209,9 @@ export class Reader {
 
   next() {
     if (this.flipping) return;
+    // '끝' 쪽이 보이는 상태에서 다음 권이 있으면 → 이어서 다음 권 꺼내기
+    const showing = [this.spread * 2 - 1, this.spread * 2];
+    if (this.nextBook && showing.includes(this.endIndex)) return this.onNext?.(this.nextBook.id);
     if (this.spread * 2 >= this.pages.length - 1) return this.close(); // 뒤표지까지 봤으면 덮기
     this.flip(1);
   }

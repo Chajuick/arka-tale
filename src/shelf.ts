@@ -1,6 +1,6 @@
 // 3D 책장: 툰 로우폴리 + 외곽선. 책 목록에 맞춰 선반이 자동으로 늘어남
 import * as THREE from 'three';
-import { BOOKS, CASES, SERIES, caseOf, isLocked, type BookCase, type BookDef } from './books';
+import { BOOKS, CASES, SERIES, caseOf, isLocked, volOf, type BookCase, type BookDef } from './books';
 import { drawEmblem } from './art';
 
 const DEPTH = 1.5; // 책 앞뒤 길이 (= 표지 가로)
@@ -136,23 +136,52 @@ export function coverCanvas(b: BookDef, w = 360, h = 520) {
     c.fillStyle = gold;
     c.fillRect(x - 6, y - 6, 12, 12);
   }
-  // 문양
-  drawEmblem(c, b.emblem, w / 2 - 54, h * 0.2, 9, b.emblemColor ?? gold);
-  // 제목
+  const PIXEL = '16px "NeoDunggeunmo Pro", Galmuri11, monospace';
   c.textAlign = 'center';
+  c.textBaseline = 'alphabetic';
+  /** 가운데 글자 양옆으로 짧은 선 + 마름모 장식 */
+  const flank = (y: number, half: number, color: string) => {
+    c.fillStyle = color;
+    for (const dir of [-1, 1]) {
+      const x0 = w / 2 + dir * half;
+      c.fillRect(dir < 0 ? x0 - 34 : x0, y - 1, 34, 2);
+      c.save();
+      c.translate(dir < 0 ? x0 - 40 : x0 + 40, y);
+      c.rotate(Math.PI / 4);
+      c.fillRect(-3, -3, 6, 6);
+      c.restore();
+    }
+  };
+  // 위: 시리즈 이름 (도트 글꼴)
+  c.font = PIXEL;
+  c.fillStyle = gold;
+  c.fillText(SERIES, w / 2, 76);
+  flank(70, c.measureText(SERIES).width / 2 + 10, gold);
+  // 문양
+  drawEmblem(c, b.emblem, w / 2 - 54, h * 0.22, 9, b.emblemColor ?? gold);
+  // 제목
   c.fillStyle = ink;
   let size = 34;
   c.font = `bold ${size}px "Gowun Batang", serif`;
   while (c.measureText(b.title).width > w - 100 && size > 18) c.font = `bold ${--size}px "Gowun Batang", serif`;
-  c.fillText(b.title, w / 2, h * 0.62);
+  c.fillStyle = 'rgba(0,0,0,0.35)';
+  c.fillText(b.title, w / 2, h * 0.63 + 3);
+  c.fillStyle = ink;
+  c.fillText(b.title, w / 2, h * 0.63);
+  // 제목 아래 짧은 금선
+  c.fillStyle = gold;
+  c.fillRect(w / 2 - 24, h * 0.63 + 16, 48, 2);
   if (b.subtitle) {
     c.font = '16px "Gowun Batang", serif';
     c.fillStyle = shade(ink, 0.8);
-    c.fillText(b.subtitle, w / 2, h * 0.62 + 34);
+    c.fillText(b.subtitle, w / 2, h * 0.63 + 46);
   }
-  c.font = '14px Galmuri11, serif';
+  // 아래: 권 번호 / 세계의 조각
+  const foot = volOf(b) ? `제 ${volOf(b)} 권` : '세계의 조각';
+  c.font = PIXEL;
   c.fillStyle = gold;
-  c.fillText(b.shelf === 'saga' ? `${SERIES} · 제${BOOKS.filter((x) => x.shelf === 'saga').indexOf(b) + 1}권` : '세계의 조각', w / 2, h - 60);
+  c.fillText(foot, w / 2, h - 58);
+  flank(h - 64, c.measureText(foot).width / 2 + 10, gold);
   return cv;
 }
 
@@ -193,6 +222,10 @@ export class Shelf {
   private fill!: THREE.PointLight;
   private dust!: THREE.Points;
   private busy = false;
+  /** 인트로 카메라: 1 = 멀리서, 0 = 제자리 */
+  private introK = 1;
+  /** 카메라 좌우 이동 (OG 촬영 구도용) */
+  viewShiftX = 0;
   onHover?: (b: BookDef | null, x: number, y: number) => void;
   onPick?: (b: BookDef) => void;
   onCaseChange?: (id: string) => void;
@@ -430,6 +463,16 @@ export class Shelf {
     this.scrollTarget = Math.min(hi, Math.max(lo, y));
   }
 
+  /** 인트로: 멀리서 책장 앞으로 다가감 */
+  enter(ms = 1800) {
+    return this.tween(ms, (k) => (this.introK = 1 - k));
+  }
+
+  /** 인트로 없이 바로 제자리 */
+  skipIntro() {
+    this.introK = 0;
+  }
+
   /** 다음/이전 책장으로 (dir: -1 위, 1 아래). 책장이 없으면 한 화면만큼 */
   stepCase(dir: -1 | 1) {
     const i = this.cases.findIndex((c) => c.id === this.activeCase);
@@ -625,8 +668,10 @@ export class Shelf {
     // 카메라: 부드러운 스크롤 + 살짝 시차
     this.scrollY += (this.scrollTarget - this.scrollY) * Math.min(1, dt * 10);
     const cy = this.scrollY;
-    this.camera.position.set(this.camBase.x + this.parallax.x * 0.5, this.camBase.y + cy - this.parallax.y * 0.3, this.camBase.z);
-    this.camera.lookAt(this.parallax.x * 0.2, cy, 0);
+    const ik = this.introK * this.introK * (3 - 2 * this.introK); // 부드럽게
+    const sx = this.viewShiftX;
+    this.camera.position.set(sx + this.camBase.x + this.parallax.x * 0.5, this.camBase.y + cy - this.parallax.y * 0.3 + ik * 1.4, this.camBase.z + ik * 7);
+    this.camera.lookAt(sx + this.parallax.x * 0.2, cy + ik * 0.6, 0);
     this.lamp.position.set(-4, cy + 6, 8);
     this.lamp.target.position.set(0, cy, 0);
     this.fill.position.set(5, cy - 1, 4);
