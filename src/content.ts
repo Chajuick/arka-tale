@@ -17,6 +17,9 @@ export function inline(md: string) {
     .replace(/\*(.+?)\*/g, '<em>$1</em>');
 }
 
+/** 원고에서 '* * *' 한 줄 = 장면 전환 표시 */
+export const SCENE_BREAK = '\u0000scene';
+
 const chapters = new Map<ChapterRef, Chapter>();
 
 for (const block of saga.split(/^## /m).slice(1)) {
@@ -29,7 +32,7 @@ for (const block of saga.split(/^## /m).slice(1)) {
     .split(/\n\s*\n/)
     .map((p) => p.trim())
     .filter((p) => p && p !== '---')
-    .map(inline);
+    .map((p) => (p === '* * *' ? SCENE_BREAK : inline(p)));
   chapters.set(ref, { ref, title, paragraphs });
 }
 

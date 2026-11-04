@@ -52,6 +52,51 @@ export function playChime() {
   swish(1.2, 3000, 600, 0.05, 0.5);
 }
 
-export const playFlip = () => swish(0.35, 1800, 4200, 0.18, 0.7);
+/** 책장 넘기는 소리: 종이가 스치는 '사락' + 넘어가며 닿는 '툭' */
+export function playFlip() {
+  const c = ensure();
+  const t0 = c.currentTime;
+  const out = c.createGain();
+  out.gain.value = 0.9;
+  out.connect(c.destination);
+
+  // 1) 사락: 대역 필터를 올리며 훑는 잡음 + 종이 바스락거림(진폭 떨림)
+  const rustle = c.createBufferSource();
+  rustle.buffer = buf;
+  const bp = c.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.Q.value = 0.9;
+  bp.frequency.setValueAtTime(900, t0);
+  bp.frequency.exponentialRampToValueAtTime(3800, t0 + 0.22);
+  bp.frequency.exponentialRampToValueAtTime(1600, t0 + 0.36);
+  const hp = c.createBiquadFilter();
+  hp.type = 'highpass';
+  hp.frequency.value = 500;
+  const env = c.createGain();
+  env.gain.setValueAtTime(0.0001, t0);
+  env.gain.exponentialRampToValueAtTime(0.32, t0 + 0.05);
+  env.gain.exponentialRampToValueAtTime(0.18, t0 + 0.2);
+  env.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.38);
+  const crinkle = c.createGain();
+  for (let t = 0; t < 0.38; t += 0.018) crinkle.gain.setValueAtTime(0.55 + Math.random() * 0.45, t0 + t);
+  rustle.connect(hp).connect(bp).connect(env).connect(crinkle).connect(out);
+  rustle.start(t0, Math.random() * 0.5);
+  rustle.stop(t0 + 0.4);
+
+  // 2) 툭: 종이가 넘어가 닿는 낮고 짧은 소리
+  const t1 = t0 + 0.3;
+  const flap = c.createBufferSource();
+  flap.buffer = buf;
+  const lp = c.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 650;
+  const fe = c.createGain();
+  fe.gain.setValueAtTime(0.0001, t1);
+  fe.gain.exponentialRampToValueAtTime(0.5, t1 + 0.008);
+  fe.gain.exponentialRampToValueAtTime(0.0001, t1 + 0.09);
+  flap.connect(lp).connect(fe).connect(out);
+  flap.start(t1, Math.random() * 0.5);
+  flap.stop(t1 + 0.1);
+}
 export const playSlide = () => swish(0.4, 500, 1400, 0.12, 1.2);
 export const playThud = () => swish(0.18, 300, 120, 0.2, 1.5);
