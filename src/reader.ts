@@ -431,6 +431,8 @@ export class Reader {
       return p;
     };
     this.bookEl.innerHTML = '';
+    this.bookEl.classList.add('flipping');
+    this.bookEl.classList.toggle('back', dir === -1);
     const leaf = document.createElement('div');
     if (dir === 1) {
       // 다음 쪽을 밑에 깔고, 지금 쪽이 넘어감
@@ -460,6 +462,7 @@ export class Reader {
       if (done) return;
       done = true;
       this.idx += dir;
+      this.bookEl.classList.remove('flipping', 'back');
       this.render();
       this.flipping = false;
     };
