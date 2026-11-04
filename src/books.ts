@@ -68,8 +68,8 @@ export const BOOKS: BookDef[] = [
   {
     id: 'saga-4', shelf: 'saga', title: '세계의 첫 번째 울음', subtitle: '재앙과 개화자', color: '#5c2230', emblem: 'tear', chapters: [8, 9],
     links: [
-      { after: 9, to: 'sasin', text: '선인들의 이야기는 『사신』에서 이어집니다' },
-      { after: 9, to: 'hwangryong', text: '다섯 번째 선인의 이야기는 『황룡의 책』에' },
+      { after: 9, to: 'sasin', text: '네 선인의 이야기는 『선인의 이야기』에서 이어집니다' },
+      { after: 9, to: 'hwangryong', text: '그리고 잊힌 다섯 번째 선인의 이야기는 『잊힌 선인』에' },
     ],
   },
   {
@@ -87,14 +87,17 @@ export const BOOKS: BookDef[] = [
 
   // ── 가운데 칸: 세계의 조각들 (설정·조직·국가) ──
   { id: 'arca', shelf: 'world', title: '아르카 대륙', subtitle: '여섯 가문의 기록', color: '#5f6070', emblem: 'castle' },
-  { id: 'sasin', shelf: 'world', title: '사신', subtitle: '남은 네 명의 선인', color: '#3a3043', emblem: 'four' },
 
   // ── 아래 칸: 빛나던 이들 (인물 이야기) ──
   { id: 'dob-bob', shelf: 'people', title: '도브와 보브', subtitle: '모르는 아이와 모든 것을 알려는 아이', color: '#6b4a2b', emblem: 'friends', chapters: ['dob-bob:1', 'dob-bob:2', 'dob-bob:3'] },
   { id: 'amane', shelf: 'people', title: '백색 길잡이 아마네', color: '#e8e2d2', ink: '#3a3530', emblem: 'lantern', emblemColor: '#ffffff' },
   { id: 'lingsha', shelf: 'people', title: '황색 길잡이 링샤', color: '#c49a2a', ink: '#2e2210', emblem: 'lantern', emblemColor: '#fff1a8' },
   { id: 'yeonhwa', shelf: 'people', title: '녹색 길잡이 연화', color: '#3c7848', emblem: 'lantern', emblemColor: '#b8f0a0' },
-  { id: 'hwangryong', shelf: 'people', title: '황룡의 책', subtitle: '아이들을 가르치던 선인', color: '#a8781c', ink: '#2a1c08', emblem: 'dragon' },
+  {
+    id: 'sasin', shelf: 'people', title: '선인의 이야기', subtitle: '산에서 기다리는 사람들', color: '#3a3043', emblem: 'four', chapters: ['sasin:1'],
+    links: [{ after: 'sasin:1', to: 'hwangryong', text: '잊힌 다섯 번째 선인의 이야기는 『잊힌 선인』에 남아 있습니다' }],
+  },
+  { id: 'hwangryong', shelf: 'people', title: '잊힌 선인', subtitle: '옳은 길의 끝에서', color: '#a8781c', ink: '#2a1c08', emblem: 'dragon', chapters: ['hwangryong:1'] },
   { id: 'aurora', shelf: 'people', title: '푸른 길잡이 오로라', subtitle: '두 명의 오로라', color: '#2f6cbf', emblem: 'lantern', emblemColor: '#a8e0ff', chapters: ['aurora:1', 'aurora:2'] },
   { id: 'doyun', shelf: 'people', title: '도윤의 책', subtitle: '자신을 지키는 아이', color: '#45566a', emblem: 'shield' },
   { id: 'seoyun', shelf: 'people', title: '서윤의 책', subtitle: '기억하는 아이', color: '#8a5a7c', emblem: 'brush' },

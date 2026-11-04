@@ -261,6 +261,48 @@ const SCENES: Record<string, (c: Ctx) => void> = {
     person(c, 152, 120, '#4a3a58', 12);
     glow(c, 76, 110, 5, '#ffd890');
   },
+  // 선인의 이야기 — 먼 산 위의 네 사람, 길을 걷는 이
+  'sasin:1': (c) => {
+    sky(c, ['#d8c8e0', '#c8b8d8', '#b8a8c8', '#a898b8']);
+    c.fillStyle = '#8a7a9a';
+    for (let x = 0; x < W; x++) {
+      const y = Math.floor(40 + Math.abs(x - 140) * 0.42);
+      c.fillRect(x, y, 1, H - y);
+    }
+    c.fillStyle = '#f2ecf4';
+    for (let x = 122; x < 158; x++) c.fillRect(x, Math.floor(40 + Math.abs(x - 140) * 0.42), 1, 3);
+    const cols = ['#f4f0e8', '#7ab0e0', '#3a3a4a', '#e07060'];
+    cols.forEach((col, i) => person(c, 126 + i * 9, 50 + Math.abs(126 + i * 9 - 140) * 0.42, col, 6));
+    hills(c, 100, 4, '#6a6a5a', 3);
+    hills(c, 112, 2, '#4a5a40', 7, 0.08);
+    c.fillStyle = '#c8b890';
+    for (let x = 20; x < 110; x++) c.fillRect(x, 122 - Math.floor((x - 20) * 0.12), 1, 2);
+    person(c, 46, 120, '#2a2430', 9);
+  },
+  // 잊힌 선인 — 심연 깊은 곳, 갈래 길들 끝의 금빛 황룡
+  'hwangryong:1': (c) => {
+    sky(c, ['#0c0a14', '#14101e', '#1c1428', '#241a30']);
+    stars(c, 30, 61, H, '#8a7ab0');
+    c.fillStyle = '#d8b050';
+    const r = prng(91);
+    for (let k = 0; k < 7; k++) {
+      let x = 110, y = 118;
+      const dx = (k - 3) * 0.9;
+      for (let t = 0; t < 70; t++) {
+        x += dx + (r() - 0.5) * 1.2;
+        y -= 1;
+        if (t % 2) c.fillRect(Math.round(x), y, 1, 1);
+      }
+    }
+    glow(c, 110, 40, 20, '#ffd060');
+    c.fillStyle = '#e8b830';
+    for (let i = 0; i < 28; i++) {
+      const ang = i * 0.45;
+      c.fillRect(110 + Math.round(Math.cos(ang) * (14 - i * 0.3)), 40 + Math.round(Math.sin(ang) * (8 - i * 0.15)), 3, 2);
+    }
+    disc(c, 110, 40, 3, '#fff0b0');
+    person(c, 110, 122, '#c8c0d8', 8);
+  },
   // 5. 코브의 빛 앞에 선 두 존재
   '5': (c) => {
     sky(c, ['#fff6e0', '#f8e8c0', '#f0d8a8', '#e8c890']);
