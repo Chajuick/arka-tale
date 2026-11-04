@@ -9,7 +9,7 @@
 export type ChapterRef = number | 'last' | `${string}:${string}`;
 export type Emblem =
   | 'star' | 'orb' | 'mountain' | 'tear' | 'abyss' | 'rescue' | 'sea'
-  | 'friends' | 'castle' | 'lantern' | 'dragon' | 'four' | 'shield' | 'brush';
+  | 'friends' | 'castle' | 'lantern' | 'dragon' | 'four' | 'shield' | 'brush' | 'sprout';
 
 export interface BookLink {
   after: ChapterRef;
@@ -58,7 +58,7 @@ export const BOOKS: BookDef[] = [
   // ── 윗칸: 큰 서사 (시대별) ──
   { id: 'saga-1', shelf: 'saga', title: '가장 아름다운 별', subtitle: '태초의 이야기', color: '#1d2a4f', emblem: 'star', chapters: [1] },
   {
-    id: 'saga-2', shelf: 'saga', title: '조율사의 시대', subtitle: '세상이 다시 눈을 뜬 날', color: '#24432f', emblem: 'orb', chapters: [2, 3, 4, 5],
+    id: 'saga-2', shelf: 'saga', title: '조율사의 시대', subtitle: '모브와 두 개의 동굴', color: '#24432f', emblem: 'orb', chapters: [2, 3, 4, 5],
     links: [{ after: 5, to: 'dob-bob', text: '도브와 보브의 여정은 『도브와 보브』에 더 자세히 기록되어 있습니다' }],
   },
   {
@@ -73,7 +73,7 @@ export const BOOKS: BookDef[] = [
     ],
   },
   {
-    id: 'saga-5', shelf: 'saga', title: '재앙이 남긴 세계', subtitle: '상처와 함께 살아가는 법', color: '#22284f', emblem: 'abyss', chapters: [10],
+    id: 'saga-5', shelf: 'saga', title: '재앙이 남긴 세계', subtitle: '상처와 함께 살아가는 법', color: '#22284f', emblem: 'sprout', chapters: [10],
     links: [{ after: 10, to: 'aurora', text: '선인들이 물러난 뒤, 심연으로 들어간 황룡과 길잡이들의 이야기는 『푸른 길잡이 오로라』에 남아 있습니다' }],
   },
   {

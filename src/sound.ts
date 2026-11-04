@@ -1,5 +1,23 @@
 // 작은 효과음 (Web Audio 합성): 종이 넘기는 소리, 책 꺼내는 소리
 let ctx: AudioContext | null = null;
+
+/** 소리 끔 여부 (브라우저에 기억) */
+let muted = (() => {
+  try {
+    return localStorage.getItem('arka:muted') === '1';
+  } catch {
+    return false;
+  }
+})();
+export const isMuted = () => muted;
+export function setMuted(on: boolean) {
+  muted = on;
+  try {
+    localStorage.setItem('arka:muted', on ? '1' : '0');
+  } catch {
+    /* 저장이 안 되는 환경이면 이번 방문 동안만 */
+  }
+}
 let buf: AudioBuffer;
 
 function ensure() {
@@ -14,6 +32,7 @@ function ensure() {
 }
 
 function swish(dur: number, from: number, to: number, vol: number, q = 0.8) {
+  if (muted) return;
   const c = ensure();
   const t0 = c.currentTime;
   const src = c.createBufferSource();
@@ -34,6 +53,7 @@ function swish(dur: number, from: number, to: number, vol: number, q = 0.8) {
 
 /** 인트로 종소리: 맑은 음 몇 개가 차례로 */
 export function playChime() {
+  if (muted) return;
   const c = ensure();
   const t0 = c.currentTime;
   [784, 988, 1175, 1568].forEach((f, i) => {
@@ -54,6 +74,7 @@ export function playChime() {
 
 /** 책장 넘기는 소리: 종이가 스치는 '사락' + 넘어가며 닿는 '툭' */
 export function playFlip() {
+  if (muted) return;
   const c = ensure();
   const t0 = c.currentTime;
   const out = c.createGain();

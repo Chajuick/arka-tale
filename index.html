@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>아르카 테일 — 이야기 서재</title>
-    <meta name="description" content="코브와 인간, 그리고 세 번의 기회에 관한 이야기. 책장에서 책을 꺼내 한 장씩 넘겨 읽는 아르카 테일의 이야기 서재." />
+    <meta name="description" content="가장 아름다운 별을 사랑한 코브와, 그 별에서 스스로 미래를 만들어 간 이들의 이야기. 책장에서 책을 꺼내 한 장씩 넘겨 읽는 아르카 테일의 이야기 서재." />
     <meta name="keywords" content="아르카 테일, Arka Tale, 동화, 판타지, 세계관, 이야기, 코브, 조율사, 길잡이" />
     <meta name="author" content="Arka Tale" />
     <meta name="robots" content="index, follow" />
@@ -28,7 +28,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="아르카 테일" />
     <meta property="og:title" content="아르카 테일 — 이야기 서재" />
-    <meta property="og:description" content="코브와 인간, 그리고 세 번의 기회에 관한 이야기. 책장에서 책을 꺼내 읽어보세요." />
+    <meta property="og:description" content="가장 아름다운 별을 사랑한 코브와, 그 별에서 스스로 미래를 만들어 간 이들의 이야기. 책장에서 책을 꺼내 읽어보세요." />
     <meta property="og:url" content="%SITE_URL%/" />
     <meta property="og:image" content="%SITE_URL%/og-image.png" />
     <meta property="og:image:type" content="image/png" />
@@ -38,7 +38,7 @@
     <meta property="og:locale" content="ko_KR" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="아르카 테일 — 이야기 서재" />
-    <meta name="twitter:description" content="코브와 인간, 그리고 세 번의 기회에 관한 이야기." />
+    <meta name="twitter:description" content="가장 아름다운 별을 사랑한 코브와, 그 별에서 스스로 미래를 만들어 간 이들의 이야기." />
     <meta name="twitter:image" content="%SITE_URL%/og-image.png" />
     <meta name="twitter:image:alt" content="아르카 테일 이야기 서재 — 책이 꽂힌 나무 책장" />
 
@@ -49,7 +49,7 @@
         "@type": "WebSite",
         "name": "아르카 테일",
         "alternateName": "Arka Tale",
-        "description": "코브와 인간, 그리고 세 번의 기회에 관한 이야기. 책장에서 책을 꺼내 읽는 이야기 서재.",
+        "description": "가장 아름다운 별을 사랑한 코브와, 그 별에서 스스로 미래를 만들어 간 이들의 이야기. 책장에서 책을 꺼내 읽는 이야기 서재.",
         "inLanguage": "ko",
         "url": "%SITE_URL%/"
       }
@@ -66,6 +66,8 @@
     <button id="edge-up" class="edge hidden" aria-label="위 책장">▲ 위 책장</button>
     <button id="edge-down" class="edge hidden" aria-label="아래 책장">▼ 아래 책장</button>
 
+    <button id="sound-btn" aria-label="소리 끄기" title="소리 켜기/끄기">♪ 소리</button>
+
     <div id="tip" class="hidden"></div>
     <div id="toast"></div>
 
@@ -74,6 +76,7 @@
         <div class="book"></div>
       </div>
       <button class="close" aria-label="닫기">책 덮기 ✕</button>
+      <div class="resume hidden">지난번 읽던 곳부터 펼쳤어요 · <button class="resume-start">처음부터 보기</button></div>
       <div class="nav">
         <button class="nav-prev" aria-label="이전 쪽">◀</button>
         <span class="progress"></span>
@@ -89,7 +92,7 @@
         <img class="intro-emblem" src="/emblem.svg" width="128" height="128" alt="" />
         <div class="intro-kicker">이야기 서재</div>
         <h1 class="intro-title" aria-label="아르카 테일"></h1>
-        <p class="intro-sub">코브와 인간, 그리고 세 번의 기회에 관한 이야기</p>
+        <p class="intro-sub">가장 아름다운 별을 사랑한 코브와,<br />그 별에서 스스로 미래를 만들어 간 이들의 이야기</p>
         <button class="intro-enter" disabled>책장을 준비하는 중…</button>
       </div>
     </div>
@@ -100,7 +103,7 @@
       <div class="og-kicker">이야기 서재</div>
       <div class="og-title">아르카 테일</div>
       <div class="og-line"></div>
-      <div class="og-sub">코브와 인간, 그리고<br />세 번의 기회에 관한 이야기</div>
+      <div class="og-sub">가장 아름다운 별을 사랑한 코브와,<br />그 별에서 미래를 만들어 간 이들의 이야기</div>
       <div class="og-badge">책장에서 책을 꺼내 읽어보세요</div>
     </div>
 

@@ -230,6 +230,8 @@ export class Shelf {
   private autoShiftX = 0;
   onHover?: (b: BookDef | null, x: number, y: number) => void;
   onPick?: (b: BookDef) => void;
+  /** 잠긴(준비 중) 책을 눌렀을 때 */
+  onLocked?: (b: BookDef) => void;
   onCaseChange?: (id: string) => void;
   /** 위/아래로 더 볼 것이 있는지 바뀔 때 */
   onScrollState?: (up: boolean, down: boolean) => void;
@@ -558,6 +560,7 @@ export class Shelf {
     if (!b) return;
     if (isLocked(b.def)) {
       void this.wiggle(b);
+      this.onLocked?.(b.def);
       return;
     }
     this.onPick?.(b.def);

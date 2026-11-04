@@ -1,12 +1,10 @@
 // 책장 사이트 진입점
 import './fonts.css';
-import '@fontsource/gowun-batang/400.css';
-import '@fontsource/gowun-batang/700.css';
 import './style.css';
 import { CASES, bookById, isLocked, type BookDef } from './books';
 import { Reader } from './reader';
 import { Shelf } from './shelf';
-import { playChime, playSlide, playThud } from './sound';
+import { isMuted, playChime, playSlide, playThud, setMuted } from './sound';
 
 const $ = (id: string) => document.getElementById(id)!;
 
@@ -29,7 +27,24 @@ function setupIntro() {
   }
 }
 
+/** 소리 켜기/끄기 버튼 */
+function setupSound() {
+  const btn = $('sound-btn');
+  const show = () => {
+    btn.classList.toggle('off', isMuted());
+    btn.textContent = isMuted() ? '♪ 소리 끔' : '♪ 소리';
+    btn.setAttribute('aria-label', isMuted() ? '소리 켜기' : '소리 끄기');
+  };
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setMuted(!isMuted());
+    show();
+  });
+  show();
+}
+
 async function start() {
+  setupSound();
   if (!OG_MODE) setupIntro();
   // 책등·표지 글자를 캔버스에 그리기 전에 폰트 준비
   await Promise.all([
@@ -138,6 +153,7 @@ async function start() {
   };
 
   shelf.onPick = (b) => void openBook(b);
+  shelf.onLocked = () => toast('아직 준비 중인 이야기예요');
 
   let linking = false; // 책갈피로 다른 책을 여는 중이면 '다시 꽂기' 연출 생략
   reader.onClose = async () => {

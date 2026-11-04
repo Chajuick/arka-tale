@@ -231,3 +231,15 @@ body.single-mode .folio { bottom: 18px; }
 .book.single.flipping > .page::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(40, 24, 10, 0.35), rgba(40, 24, 10, 0) 70%); animation: under-shade 0.6s ease forwards; }
 .book.single.flipping.back > .page::after { animation-direction: reverse; }
 @keyframes under-shade { from { opacity: 1; } to { opacity: 0; } }
+
+/* 소리 켜기/끄기 */
+#sound-btn { position: fixed; left: 14px; bottom: 14px; z-index: 90; padding: 6px 12px; font-family: Galmuri11, monospace; font-size: 12px; color: #f4e6c8; background: rgba(30, 20, 14, 0.75); border: 1px solid rgba(201, 162, 74, 0.6); cursor: pointer; }
+#sound-btn.off { color: #9a8a74; text-decoration: line-through; }
+body.og #sound-btn { display: none; }
+@media (max-width: 640px) { #sound-btn { left: 10px; bottom: 10px; font-size: 11px; padding: 5px 9px; } }
+#reader:not(.hidden) ~ #sound-btn, body:has(#reader:not(.hidden)) #sound-btn { bottom: auto; top: 14px; }
+
+/* 이어 읽기 안내 */
+#reader .resume { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 40; padding: 7px 14px; font-family: Galmuri11, monospace; font-size: 12px; color: #f4e6c8; background: rgba(30, 20, 14, 0.92); border: 1px solid var(--gold); white-space: nowrap; }
+#reader .resume button { padding: 0; border: 0; background: none; box-shadow: none; color: var(--gold); text-decoration: underline; font: inherit; cursor: pointer; }
+@media (max-width: 640px) { #reader .resume { top: 54px; font-size: 11px; } }

@@ -58,6 +58,12 @@ export class Reader {
 
   constructor() {
     this.root.querySelector('.close')!.addEventListener('click', () => this.close());
+    this.root.querySelector('.resume-start')!.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.goto(0);
+      this.render();
+      (this.root.querySelector('.resume') as HTMLElement).classList.add('hidden');
+    });
     this.root.querySelector('.nav-prev')!.addEventListener('click', () => this.prev());
     this.root.querySelector('.nav-next')!.addEventListener('click', () => this.next());
     window.addEventListener('keydown', (e) => {
@@ -340,11 +346,53 @@ export class Reader {
     this.build(b);
     this.spread = 0;
     this.idx = 0;
+    // 지난번 읽던 곳부터 (끝까지 읽은 책은 처음부터)
+    const saved = this.loadPos(b);
+    const resume = this.root.querySelector('.resume') as HTMLElement;
+    resume.classList.add('hidden');
+    if (saved > 0) {
+      this.goto(Math.round(saved * (this.pages.length - 1)));
+      resume.classList.remove('hidden');
+      window.clearTimeout(this.resumeTimer);
+      this.resumeTimer = window.setTimeout(() => resume.classList.add('hidden'), 5000);
+    }
     this.root.classList.remove('hidden', 'closing');
     this.root.style.setProperty('--book-color', b.color);
     this.render();
     this.fit();
     requestAnimationFrame(() => this.root.classList.add('shown'));
+  }
+
+  private resumeTimer = 0;
+
+  /** 쪽 번호로 바로 이동 (모드에 맞춰) */
+  private goto(page: number) {
+    if (this.mode === 'single') this.idx = Math.max(0, Math.min(this.pages.length - 1, page));
+    else this.spread = Math.max(0, Math.min(Math.floor(this.pages.length / 2), Math.ceil(page / 2)));
+  }
+
+  private posKey(b: BookDef) {
+    return `arka:pos:${b.id}`;
+  }
+
+  /** 읽은 위치를 비율로 저장 (모드가 바뀌어도 쓸 수 있게). 끝 쪽까지 읽으면 지움 */
+  private savePos() {
+    if (!this.book) return;
+    try {
+      const p = this.position();
+      if (p >= this.endIndex || p <= 1) localStorage.removeItem(this.posKey(this.book));
+      else localStorage.setItem(this.posKey(this.book), (p / Math.max(1, this.pages.length - 1)).toFixed(4));
+    } catch {
+      /* 저장이 안 되는 환경 */
+    }
+  }
+
+  private loadPos(b: BookDef) {
+    try {
+      return parseFloat(localStorage.getItem(this.posKey(b)) ?? '0') || 0;
+    } catch {
+      return 0;
+    }
   }
 
   async close() {
@@ -360,6 +408,7 @@ export class Reader {
 
   /** spread s: 왼쪽 = pages[2s-1], 오른쪽 = pages[2s] */
   private render() {
+    this.savePos();
     if (this.mode === 'single') return this.renderSingle();
     const L = this.pages[this.spread * 2 - 1];
     const R = this.pages[this.spread * 2];
