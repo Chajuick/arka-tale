@@ -1,8 +1,9 @@
+import { getChapter } from './content';
 // 서재 구성 — 책장(CASES)과 책(BOOKS)
 //   책장을 추가하려면 CASES에 한 줄, 책을 추가하려면 BOOKS에 한 줄 (선반이 차면 자동으로 한 칸 늘어남)
 //   case: 꽂힐 책장 id (없으면 첫 책장) / shelf: 그 책장 안의 칸 key
 //   chapters: saga.md의 장 번호 ('last' = 마지막 장). 비어 있으면 잠긴 책 ("준비 중인 이야기")
-//   공개 범위: OPEN_SHELVES에 든 칸의 책만 읽을 수 있음 (나머지는 준비 중으로 잠김)
+//   공개 범위: 원고 파일이 content/lore 에 있으면 공개, content/draft 에 있으면 준비 중
 //   links: 그 장이 끝난 뒤 다른 책으로 이어지는 책갈피
 
 /** 큰 서사 장 번호(1, 2, …, 'last') 또는 개별 책의 장('dob-bob:1') */
@@ -117,6 +118,5 @@ export const caseOf = (b: BookDef) => b.case ?? (CASES.find((c) => c.rows.some((
 /** 칸 이름 (표지·속표지 아래에 표시) */
 export const categoryOf = (b: BookDef) => CASES.find((c) => c.id === caseOf(b))!.title;
 export const bookById = (id: string) => BOOKS.find((b) => b.id === id);
-/** 공개한 칸. 지금은 아르카 테일(큰 이야기)만 공개하고, 나머지 칸의 책은 준비 중 */
-export const OPEN_SHELVES = new Set(['saga']);
-export const isLocked = (b: BookDef) => !OPEN_SHELVES.has(b.shelf) || !b.chapters || b.chapters.length === 0;
+/** 원고가 없는 책은 준비 중 (공개 여부는 원고 파일 위치로 정함: content/lore = 공개, content/draft = 준비 중) */
+export const isLocked = (b: BookDef) => !b.chapters?.length || b.chapters.some((ref) => !getChapter(ref));
