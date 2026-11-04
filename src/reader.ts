@@ -5,8 +5,11 @@ import { SCENE_BREAK, getChapter } from './content';
 import { coverCanvas } from './shelf';
 import { playFlip } from './sound';
 
-const PAGE_W = 460;
-const PAGE_H = 640;
+/** 쪽 크기(디자인 px): 두 쪽 펼침 / 휴대폰 한 쪽 보기 */
+const DIMS = { spread: { w: 460, h: 640 }, single: { w: 380, h: 660 } } as const;
+type Mode = keyof typeof DIMS;
+/** 좁거나 세로로 긴 화면이면 한 쪽씩 크게 */
+const pickMode = (): Mode => (window.innerWidth < 760 || window.innerWidth / window.innerHeight < 1.05 ? 'single' : 'spread');
 /** 쪽 HTML 앞에 붙는 표시: 꽉 찬 쪽 (문단 사이를 벌려 아래를 맞춤) */
 const FULL = '\u0001full';
 
@@ -39,7 +42,12 @@ export class Reader {
   private bookEl = this.root.querySelector('.book') as HTMLElement;
   private stage = this.root.querySelector('.stage') as HTMLElement;
   private pages: string[] = []; // 각 쪽의 HTML
-  private spread = 0; // 0 = 표지(오른쪽만)
+  private spread = 0; // 두 쪽 모드: 펼침 번호 (0 = 표지)
+  private idx = 0; // 한 쪽 모드: 쪽 번호
+  private mode: Mode = 'spread';
+  private book: BookDef | null = null;
+  private bodyStart = 0; // 본문 첫 쪽 (쪽 번호 1)
+  private bodyEnd = 0; // 본문 끝 (이 쪽부터는 번호 없음)
   private flipping = false;
   private nextBook: BookDef | undefined; // 큰 서사의 다음 권
   private endIndex = -1; // '끝' 쪽 위치
@@ -80,7 +88,41 @@ export class Reader {
       const dx = e.changedTouches[0].clientX - sx;
       if (Math.abs(dx) > 40) (dx < 0 ? this.next() : this.prev());
     });
-    window.addEventListener('resize', () => this.fit());
+    window.addEventListener('resize', () => this.onResize());
+  }
+
+  private get dims() {
+    return DIMS[this.mode];
+  }
+
+  /** 쪽 크기를 CSS 변수와 측정용 쪽에 반영 */
+  private applyMode() {
+    const d = this.dims;
+    document.documentElement.style.setProperty('--pw', `${d.w}px`);
+    document.documentElement.style.setProperty('--ph', `${d.h}px`);
+    document.body.classList.toggle('single-mode', this.mode === 'single');
+    this.bookEl.classList.toggle('single', this.mode === 'single');
+  }
+
+  /** 화면을 돌리거나 크기가 바뀌면: 모드가 달라질 때만 다시 쪽을 나누고, 읽던 위치를 비율로 유지 */
+  private onResize() {
+    const m = pickMode();
+    if (this.book && !this.root.classList.contains('hidden') && m !== this.mode && !this.flipping) {
+      const ratio = this.position() / Math.max(1, this.pages.length - 1);
+      this.mode = m;
+      this.applyMode();
+      this.build(this.book);
+      const target = Math.round(ratio * (this.pages.length - 1));
+      if (this.mode === 'single') this.idx = target;
+      else this.spread = Math.ceil(target / 2);
+      this.render();
+    }
+    this.fit();
+  }
+
+  /** 지금 보고 있는 쪽 번호 (두 쪽 모드는 오른쪽 쪽) */
+  private position() {
+    return this.mode === 'single' ? this.idx : this.spread * 2;
   }
 
   // ───────── 쪽 만들기 ─────────
@@ -242,7 +284,7 @@ export class Reader {
   private pendingTail: Block | null = null;
 
   private coverHTML(b: BookDef) {
-    const url = coverCanvas(b, PAGE_W, PAGE_H).toDataURL();
+    const url = coverCanvas(b, this.dims.w, this.dims.h).toDataURL();
     return `<img class="cover-img" src="${url}" alt="">`;
   }
 
@@ -268,15 +310,36 @@ export class Reader {
 
   // ───────── 열기 / 닫기 ─────────
 
-  open(b: BookDef) {
-    this.nextBook = nextVolume(b);
-    // 쪽 구성: [표지][면지(빈)][속표지][본문...][끝][뒤표지]
+  /**
+   * 쪽 구성
+   *  두 쪽 모드: [표지][면지][속표지][본문...][끝][(빈 쪽)][뒤표지]
+   *  한 쪽 모드: [표지][속표지][본문...][끝]
+   */
+  private build(b: BookDef) {
     const body = this.paginate(b);
-    this.pages = [this.coverHTML(b), '<div class="endpaper"></div>', this.titlePageHTML(b), ...body, this.endHTML()];
-    this.endIndex = this.pages.length - 1;
-    if (this.pages.length % 2 === 1) this.pages.push('<div class="blank"></div>');
-    this.pages.push(`<div class="back-cover" style="background:${b.color}"></div>`);
+    if (this.mode === 'single') {
+      this.pages = [this.coverHTML(b), this.titlePageHTML(b), ...body, this.endHTML()];
+      this.bodyStart = 2;
+    } else {
+      this.pages = [this.coverHTML(b), '<div class="endpaper"></div>', this.titlePageHTML(b), ...body, this.endHTML()];
+      this.bodyStart = 3;
+    }
+    this.bodyEnd = this.bodyStart + body.length;
+    this.endIndex = this.bodyEnd;
+    if (this.mode === 'spread') {
+      if (this.pages.length % 2 === 1) this.pages.push('<div class="blank"></div>');
+      this.pages.push(`<div class="back-cover" style="background:${b.color}"></div>`);
+    }
+  }
+
+  open(b: BookDef) {
+    this.book = b;
+    this.nextBook = nextVolume(b);
+    this.mode = pickMode();
+    this.applyMode();
+    this.build(b);
     this.spread = 0;
+    this.idx = 0;
     this.root.classList.remove('hidden', 'closing');
     this.root.style.setProperty('--book-color', b.color);
     this.render();
@@ -297,6 +360,7 @@ export class Reader {
 
   /** spread s: 왼쪽 = pages[2s-1], 오른쪽 = pages[2s] */
   private render() {
+    if (this.mode === 'single') return this.renderSingle();
     const L = this.pages[this.spread * 2 - 1];
     const R = this.pages[this.spread * 2];
     this.bookEl.innerHTML = '';
@@ -308,21 +372,37 @@ export class Reader {
     (this.root.querySelector('.progress') as HTMLElement).textContent = `${this.spread + 1} / ${total}`;
   }
 
+  private renderSingle() {
+    this.bookEl.innerHTML = '';
+    this.bookEl.classList.remove('closed-front', 'closed-back');
+    this.bookEl.appendChild(this.pageEl(this.pages[this.idx], 'right', this.idx));
+    (this.root.querySelector('.progress') as HTMLElement).textContent = `${this.idx + 1} / ${this.pages.length}`;
+  }
+
+  private isHard(index: number) {
+    return index === 0 || (this.mode === 'spread' && index === this.pages.length - 1);
+  }
+
   private pageEl(html: string, side: 'left' | 'right', index: number) {
     const el = document.createElement('div');
-    el.className = `page ${side}${index === 0 || index === this.pages.length - 1 ? ' hard' : ''}`;
+    el.className = `page ${side}${this.isHard(index) ? ' hard' : ''}`;
     let extra = 0;
     if (html.startsWith(FULL)) {
       const bar = html.indexOf('|');
       extra = parseFloat(html.slice(FULL.length, bar));
       html = html.slice(bar + 1);
     }
-    el.innerHTML = `<div class="page-inner${extra ? ' full' : ''}" style="--extra:${extra}px">${html}</div>${index > 2 && index < this.pages.length - 2 ? `<div class="folio">${index - 2}</div>` : ''}`;
+    el.innerHTML = `<div class="page-inner${extra ? ' full' : ''}" style="--extra:${extra}px">${html}</div>${index >= this.bodyStart && index < this.bodyEnd ? `<div class="folio">${index - this.bodyStart + 1}</div>` : ''}`;
     return el;
   }
 
   next() {
     if (this.flipping) return;
+    if (this.mode === 'single') {
+      if (this.nextBook && this.idx === this.endIndex) return this.onNext?.(this.nextBook.id);
+      if (this.idx >= this.pages.length - 1) return this.close();
+      return this.flipSingle(1);
+    }
     // '끝' 쪽이 보이는 상태에서 다음 권이 있으면 → 이어서 다음 권 꺼내기
     const showing = [this.spread * 2 - 1, this.spread * 2];
     if (this.nextBook && showing.includes(this.endIndex)) return this.onNext?.(this.nextBook.id);
@@ -331,8 +411,62 @@ export class Reader {
   }
 
   prev() {
-    if (this.flipping || this.spread === 0) return;
+    if (this.flipping) return;
+    if (this.mode === 'single') {
+      if (this.idx > 0) this.flipSingle(-1);
+      return;
+    }
+    if (this.spread === 0) return;
     this.flip(-1);
+  }
+
+  /** 한 쪽 모드: 종이 한 장이 왼쪽 가장자리를 축으로 넘어감 */
+  private flipSingle(dir: 1 | -1) {
+    this.flipping = true;
+    playFlip();
+    const i = this.idx;
+    const paper = () => {
+      const p = document.createElement('div');
+      p.className = 'page right face back';
+      return p;
+    };
+    this.bookEl.innerHTML = '';
+    const leaf = document.createElement('div');
+    if (dir === 1) {
+      // 다음 쪽을 밑에 깔고, 지금 쪽이 넘어감
+      this.bookEl.appendChild(this.pageEl(this.pages[i + 1], 'right', i + 1));
+      const f = this.pageEl(this.pages[i], 'right', i);
+      f.classList.add('face', 'front');
+      leaf.className = 'leaf right';
+      leaf.append(f, paper());
+      this.bookEl.appendChild(leaf);
+      void leaf.offsetWidth;
+      leaf.classList.add('turn');
+    } else {
+      // 지금 쪽 위로, 앞 쪽이 되넘어옴
+      this.bookEl.appendChild(this.pageEl(this.pages[i], 'right', i));
+      const f = this.pageEl(this.pages[i - 1], 'right', i - 1);
+      f.classList.add('face', 'front');
+      leaf.className = 'leaf right turn no-anim';
+      leaf.append(f, paper());
+      this.bookEl.appendChild(leaf);
+      void leaf.offsetWidth;
+      leaf.classList.remove('no-anim');
+      void leaf.offsetWidth;
+      leaf.classList.remove('turn');
+    }
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      this.idx += dir;
+      this.render();
+      this.flipping = false;
+    };
+    leaf.addEventListener('transitionend', (e) => {
+      if (e.target === leaf && e.propertyName === 'transform') finish();
+    });
+    window.setTimeout(finish, 900);
   }
 
   /** 종이 한 장이 책등을 축으로 넘어감 */
@@ -377,9 +511,13 @@ export class Reader {
     window.setTimeout(finish, 900); // 전환 이벤트가 오지 않아도 멈추지 않게
   }
 
-  /** 화면 크기에 맞춰 책 크기 조절 (두 쪽 펼침 기준) */
+  /** 화면 크기에 맞춰 책 크기 조절 */
   private fit() {
-    const scale = Math.min((window.innerWidth - 40) / (PAGE_W * 2), (window.innerHeight - 110) / PAGE_H, 1.25);
+    const { w, h } = this.dims;
+    const scale =
+      this.mode === 'single'
+        ? Math.min((window.innerWidth - 20) / w, (window.innerHeight - 96) / h, 1.25)
+        : Math.min((window.innerWidth - 40) / (w * 2), (window.innerHeight - 110) / h, 1.25);
     this.stage.style.setProperty('--scale', String(scale));
   }
 }

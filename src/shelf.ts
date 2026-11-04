@@ -226,6 +226,8 @@ export class Shelf {
   private introK = 1;
   /** 카메라 좌우 이동 (OG 촬영 구도용) */
   viewShiftX = 0;
+  /** 세로 화면에서 책 쪽으로 살짝 옮겨 보기 */
+  private autoShiftX = 0;
   onHover?: (b: BookDef | null, x: number, y: number) => void;
   onPick?: (b: BookDef) => void;
   onCaseChange?: (id: string) => void;
@@ -440,12 +442,19 @@ export class Shelf {
     // 책장 너비가 화면에 들어오도록 거리 계산 (세로는 스크롤)
     const fovV = THREE.MathUtils.degToRad(this.camera.fov);
     const fovH = 2 * Math.atan(Math.tan(fovV / 2) * this.camera.aspect);
-    const needW = INNER_W + 1.6;
+    // 세로로 긴 화면(휴대폰): 책장 양옆 빈 곳은 살짝 잘라내고 책이 꽂힌 쪽을 가운데로 → 책이 더 크게
+    const portrait = this.camera.aspect < 1;
+    const needW = portrait ? INNER_W * 0.78 : INNER_W + 1.6;
+    this.autoShiftX = portrait ? -0.7 : 0;
     // 보이는 높이: 책장 전체가 낮으면 전체, 아니면 큰 이야기 칸 + 다음 칸 일부가 보이는 정도로 고정
     const stackH = this.cases[0].top - this.cases[this.cases.length - 1].bottom;
     const viewH = Math.min(stackH + 1.8, 7.6);
     const dist = Math.max(needW / 2 / Math.tan(fovH / 2), viewH / 2 / Math.tan(fovV / 2));
     this.camBase.set(0, 0, dist + DEPTH / 2);
+    // 안개는 카메라 거리에 맞춰 (멀리서 볼 때 책장 전체가 어두워지지 않게)
+    const fog = this.scene.fog as THREE.Fog;
+    fog.near = dist + 4;
+    fog.far = dist + 20;
     this.visibleH = 2 * dist * Math.tan(fovV / 2);
     // 스크롤 범위: 맨 위 이름판 ~ 맨 아래 책장 바닥
     const hi = 0.9 - this.visibleH / 2;
@@ -670,7 +679,7 @@ export class Shelf {
     this.scrollY += (this.scrollTarget - this.scrollY) * Math.min(1, dt * 10);
     const cy = this.scrollY;
     const ik = this.introK * this.introK * (3 - 2 * this.introK); // 부드럽게
-    const sx = this.viewShiftX;
+    const sx = this.viewShiftX + this.autoShiftX;
     this.camera.position.set(sx + this.camBase.x + this.parallax.x * 0.5, this.camBase.y + cy - this.parallax.y * 0.3 + ik * 1.4, this.camBase.z + ik * 7);
     this.camera.lookAt(sx + this.parallax.x * 0.2, cy + ik * 0.6, 0);
     this.lamp.position.set(-4, cy + 6, 8);

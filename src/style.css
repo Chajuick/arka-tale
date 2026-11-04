@@ -180,3 +180,43 @@ body.og #hint, body.og #cases, body.og .edge, body.og #tip { display: none !impo
 .og-line { width: 360px; height: 4px; margin: 18px 0; background: #e8c060; opacity: 0.6; }
 .og-sub { font-family: 'Gowun Batang', serif; font-size: 28px; line-height: 1.5; color: #ece0c8; }
 .og-badge { align-self: flex-start; margin-top: 26px; padding: 10px 18px; font-family: Galmuri11, monospace; font-size: 18px; color: #2a1a0c; background: #e8c060; border: 3px solid #1a0e06; }
+
+/* ───────── 휴대폰 ───────── */
+html, body { overscroll-behavior: none; }
+#reader { touch-action: manipulation; }
+.leaf.no-anim, .leaf.no-anim .face::after { transition: none !important; }
+
+/* 한 쪽 보기: 책 너비 = 한 쪽, 쪽과 넘기는 종이는 왼쪽 가장자리 기준 */
+.book.single { width: var(--pw); }
+.book.single .page, .book.single .leaf { left: 0; }
+.book.single .page.right { border-radius: 4px 8px 8px 4px; }
+/* 한 쪽 보기는 화면이 좁으니 쪽 안 여백을 줄여 글자를 크게 */
+body.single-mode .page-inner { padding: 44px 30px 50px; }
+body.single-mode .page.hard .page-inner { padding: 0; }
+body.single-mode .folio { bottom: 18px; }
+
+@media (max-width: 640px) {
+  #cases { display: none; }
+  #hint p { font-size: 11px; padding: 5px 10px; }
+  #reader .close { top: 10px; right: 10px; padding: 6px 10px; }
+  #reader .nav { bottom: 10px; gap: 10px; }
+  #reader .nav button { padding: 8px 18px; }
+  .edge { font-size: 11px; padding: 5px 12px; }
+}
+
+/* 가로로 눕힌 휴대폰: 세로로 보라는 안내 (잠깐 보였다 사라짐) */
+@media (orientation: landscape) and (max-height: 500px) {
+  #reader.shown::after {
+    content: '휴대폰을 세로로 들면 더 크게 읽을 수 있어요';
+    position: fixed; left: 50%; top: 12px; transform: translateX(-50%);
+    padding: 6px 14px; background: rgba(30, 20, 14, 0.92); border: 1px solid var(--gold);
+    color: #f4e6c8; font-family: Galmuri11, monospace; font-size: 11px;
+    animation: hint-fade 4s ease forwards; pointer-events: none;
+  }
+  #reader .close { top: 8px; right: 8px; padding: 5px 9px; }
+  #reader .nav { bottom: 6px; }
+}
+@keyframes hint-fade { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
+/* 안내 문구: 마우스 / 터치 화면 */
+.for-touch { display: none; }
+@media (hover: none) { .for-mouse { display: none; } .for-touch { display: inline; } }
