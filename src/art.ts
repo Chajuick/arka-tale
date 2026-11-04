@@ -166,7 +166,7 @@ const SCENES: Record<string, (c: Ctx) => void> = {
     slime(c, 186, 120, '#a0c0f0', 3);
   },
   // 3. 동굴 밖으로 걸어 나온 아이
-  '3': (c) => {
+  'dob-bob:1': (c) => {
     sky(c, ['#bfe3f0', '#a8d8c8', '#90c8a0']);
     hills(c, 60, 8, '#5a8a50', 1);
     for (let i = 0; i < 6; i++) tree(c, 120 + i * 18, 92, 16 + (i % 2) * 6, '#3a6a38');
@@ -178,7 +178,7 @@ const SCENES: Record<string, (c: Ctx) => void> = {
     slime(c, 96, 118, '#ffd080', 4);
   },
   // 4. 별빛 아래 두 동행
-  '4': (c) => {
+  'dob-bob:2': (c) => {
     sky(c, ['#1a1838', '#2a2450', '#3a3060', '#4a3a68']);
     stars(c, 90, 7, 70);
     disc(c, 180, 26, 9, '#fff3c8');
@@ -190,6 +190,74 @@ const SCENES: Record<string, (c: Ctx) => void> = {
     person(c, 122, 112, '#3a3048', 12);
     c.fillStyle = '#c84040';
     c.fillRect(121, 98, 3, 1);
+  },
+  // 3. 백의 조율사와 흑의 조율사 — 마주 선 두 무리, 가운데 부딪치는 오브
+  '3': (c) => {
+    sky(c, ['#2a2438', '#3a3048', '#4a3a52', '#5a4458']);
+    stars(c, 30, 31, 50, '#e8d8ff');
+    hills(c, 100, 5, '#2a2230', 4);
+    // 가운데 부딪치는 빛
+    glow(c, 110, 78, 22, '#fff0c8');
+    disc(c, 110, 78, 4, '#ffffff');
+    c.fillStyle = '#ffe8a0';
+    for (let a = 0; a < 10; a++) {
+      const ang = (a / 10) * Math.PI * 2;
+      for (let d = 7; d < 18; d += 2) c.fillRect(110 + Math.cos(ang) * d, 78 + Math.sin(ang) * d, 1, 1);
+    }
+    // 왼쪽: 백의 조율사 / 오른쪽: 흑의 조율사
+    for (let i = 0; i < 4; i++) person(c, 30 + i * 13, 116 - (i % 2) * 2, '#ece6da', 11);
+    for (let i = 0; i < 4; i++) person(c, 152 + i * 13, 116 - (i % 2) * 2, '#1e1826', 11);
+    disc(c, 82, 98, 3, '#fff6d8');
+    disc(c, 138, 98, 3, '#8a6aff');
+    hills(c, 118, 1, '#18121e', 2, 0.1);
+  },
+  // 4. 두 개의 동굴 — 가까운 밝은 동굴, 멀리 숨겨진 어두운 동굴
+  '4': (c) => {
+    sky(c, ['#c8d8e8', '#b8c8d8', '#a8b8c8', '#98a8b8']);
+    // 먼 산과 그 속의 어두운 동굴
+    c.fillStyle = '#6a7080';
+    for (let x = 0; x < W; x++) {
+      const y = Math.floor(48 + Math.abs(x - 170) * 0.5);
+      c.fillRect(x, y, 1, H - y);
+    }
+    disc(c, 172, 74, 7, '#2a1c2a');
+    c.fillStyle = '#a03030';
+    c.fillRect(171, 72, 1, 1);
+    c.fillRect(173, 72, 1, 1);
+    hills(c, 92, 5, '#4a6a48', 3);
+    hills(c, 120, 2, '#3a5a38', 6, 0.1);
+    // 가까운 바위와 따뜻한 빛이 새어 나오는 동굴 (풀밭 위에 그려야 가려지지 않음)
+    disc(c, 60, 108, 28, '#7a6a5a');
+    c.fillStyle = '#3a5a38';
+    c.fillRect(0, 121, W, H - 121);
+    disc(c, 60, 112, 15, '#3a2a1c');
+    c.fillStyle = '#3a2a1c';
+    c.fillRect(45, 112, 31, 9);
+    glow(c, 60, 114, 13, '#ffd890');
+    disc(c, 60, 115, 6, '#ffe8b0');
+    person(c, 104, 118, '#f2e6c8', 10);
+    person(c, 118, 118, '#4a3a48', 11);
+  },
+  // 도브와 보브 3. 징벌의 동굴 앞의 두 존재
+  'dob-bob:3': (c) => {
+    sky(c, ['#1a1024', '#24142e', '#2e1a36', '#3a2040']);
+    stars(c, 40, 41, 40, '#d8c0ff');
+    c.fillStyle = '#2a1e2a';
+    for (let x = 0; x < W; x++) {
+      const y = Math.floor(30 + Math.abs(x - 110) * 0.45);
+      c.fillRect(x, y, 1, H - y);
+    }
+    disc(c, 110, 92, 26, '#0c060c');
+    c.fillStyle = '#0c060c';
+    c.fillRect(84, 92, 53, 30);
+    glow(c, 110, 96, 12, '#c03040');
+    c.fillStyle = '#ff5050';
+    c.fillRect(104, 90, 2, 1);
+    c.fillRect(115, 90, 2, 1);
+    hills(c, 118, 2, '#1a1218', 3, 0.1);
+    person(c, 70, 120, '#f2e6c8', 10);
+    person(c, 152, 120, '#4a3a58', 12);
+    glow(c, 76, 110, 5, '#ffd890');
   },
   // 5. 코브의 빛 앞에 선 두 존재
   '5': (c) => {
@@ -206,7 +274,27 @@ const SCENES: Record<string, (c: Ctx) => void> = {
     person(c, 120, 112, '#3a3048', 12);
   },
   // 6. 높은 산 위의 도시 아르카
+  // 6. 인간에게 맡겨진 세계 — 연기를 뿜는 도시와 베어진 숲, 남은 나무 한 그루
   '6': (c) => {
+    sky(c, ['#8a8898', '#9a9098', '#b0a098', '#c8a890']);
+    for (let i = 0; i < 12; i++) building(c, 92 + i * 10, 9, 18 + ((i * 11) % 26), 96, '#4a4a58', '#ffe0a0', i + 50);
+    c.fillStyle = '#3a3a48';
+    for (const x of [112, 150, 186]) {
+      c.fillRect(x, 50, 4, 46);
+      for (let k = 0; k < 6; k++) {
+        c.globalAlpha = 0.5 - k * 0.07;
+        disc(c, x + 2 + k * 5, 46 - k * 6, 4 + k, '#6a6670');
+      }
+      c.globalAlpha = 1;
+    }
+    hills(c, 96, 2, '#6a7a58', 2, 0.05);
+    c.fillStyle = '#5a4030';
+    for (let x = 8; x < 86; x += 11) c.fillRect(x, 104 + (x % 3), 5, 3);
+    tree(c, 44, 104, 18, '#4a7a40');
+    hills(c, 112, 2, '#4a5a3a', 5, 0.1);
+    person(c, 62, 118, '#e8dcc0', 10);
+  },
+  '7': (c) => {
     sky(c, ['#c8c0b8', '#b8b0b0', '#a8a0a8', '#9890a0']);
     c.fillStyle = '#6a6070';
     for (let x = 0; x < W; x++) {
@@ -221,7 +309,39 @@ const SCENES: Record<string, (c: Ctx) => void> = {
     for (let x = 0; x < W; x += 7) c.fillRect(x, 116 + (x % 3), 4, 1);
   },
   // 7. 세계의 첫 번째 울음 (붉은 하늘, 뒤틀린 거리)
-  '7': (c) => {
+  // 8. 잊혀진 힘 — 연구실의 유리관 속에서 빛나는 감정 물질
+  '8': (c) => {
+    sky(c, ['#101828', '#141e30', '#18243a', '#1c2a44']);
+    c.fillStyle = '#26324a';
+    c.fillRect(0, 96, W, H - 96);
+    c.fillStyle = '#2e3c58';
+    for (let x = 0; x < W; x += 22) c.fillRect(x, 96, 1, H - 96);
+    // 유리관
+    c.fillStyle = 'rgba(160, 210, 255, 0.18)';
+    c.fillRect(92, 34, 36, 62);
+    c.fillStyle = '#8ab0d8';
+    c.fillRect(90, 30, 40, 4);
+    c.fillRect(90, 96, 40, 4);
+    c.fillRect(92, 34, 1, 62);
+    c.fillRect(127, 34, 1, 62);
+    // 감정 물질: 여러 빛깔이 뒤섞인 빛
+    glow(c, 110, 64, 18, '#c8a0ff');
+    disc(c, 110, 64, 6, '#fff0ff');
+    const cols = ['#ffd060', '#60a0ff', '#ff6060', '#a0ff90'];
+    for (let k = 0; k < 4; k++) disc(c, 110 + Math.round(Math.cos(k * 1.6) * 9), 64 + Math.round(Math.sin(k * 1.6) * 9), 2, cols[k]);
+    // 모니터와 연구원
+    c.fillStyle = '#0c1220';
+    c.fillRect(30, 70, 34, 24);
+    c.fillStyle = '#3ae0a0';
+    for (let x = 33; x < 61; x += 2) c.fillRect(x, 82 + Math.round(Math.sin(x * 0.7) * 4), 1, 1);
+    c.fillStyle = '#0c1220';
+    c.fillRect(160, 76, 30, 18);
+    c.fillStyle = '#c8a0ff';
+    for (let k = 0; k < 5; k++) c.fillRect(164 + k * 5, 90 - ((k * 7) % 11), 3, ((k * 7) % 11) + 1);
+    person(c, 70, 118, '#e8ecf4', 11);
+    person(c, 150, 118, '#e8ecf4', 11);
+  },
+  '9': (c) => {
     sky(c, ['#3a0f1a', '#5a1a24', '#8a2a2a', '#c84a30']);
     const r = prng(11);
     for (let i = 0; i < 14; i++) {
@@ -244,7 +364,31 @@ const SCENES: Record<string, (c: Ctx) => void> = {
     hills(c, 112, 2, '#120608', 3, 0.1);
   },
   // 8. 심연의 소용돌이
-  '8': (c) => {
+  // 10. 재앙이 남긴 세계 — 무너진 거리를 다시 세우는 사람들, 멀리 빛나는 안전한 도시
+  '10': (c) => {
+    sky(c, ['#3a3448', '#4a4054', '#6a5460', '#8a6a68']);
+    for (let i = 0; i < 9; i++) building(c, 128 + i * 10, 9, 22 + ((i * 7) % 20), 92, '#5a5a70', '#ffe8a0', i + 70);
+    glow(c, 168, 78, 26, '#ffe8b0');
+    hills(c, 92, 2, '#3a3038', 2, 0.05);
+    // 무너진 건물 (기울어진 잔해)
+    const r = prng(77);
+    for (let i = 0; i < 6; i++) {
+      c.save();
+      c.translate(14 + i * 18, 108);
+      c.rotate((r() - 0.5) * 0.6);
+      c.fillStyle = '#2a2430';
+      c.fillRect(-4, -14 - Math.floor(r() * 12), 9, 26);
+      c.restore();
+    }
+    hills(c, 110, 2, '#24202a', 5, 0.1);
+    // 잔해를 치우고 다시 세우는 사람들
+    c.fillStyle = '#8a7a6a';
+    c.fillRect(60, 100, 14, 3);
+    person(c, 54, 118, '#e8dcc0', 10);
+    person(c, 80, 118, '#c8b8a8', 10);
+    person(c, 100, 118, '#e8dcc0', 8);
+  },
+  'aurora:1': (c) => {
     sky(c, ['#0a0818', '#120e28', '#1a1438']);
     stars(c, 40, 13, H, '#a8a0ff');
     for (let k = 0; k < 520; k++) {
@@ -258,7 +402,7 @@ const SCENES: Record<string, (c: Ctx) => void> = {
     person(c, 40, 118, '#a8b8ff', 9);
   },
   // 9. 두 명의 오로라 (마주 선 두 실루엣)
-  '9': (c) => {
+  'aurora:2': (c) => {
     sky(c, ['#0f1a3a', '#16285a', '#1e3a7a', '#2a4a8a']);
     stars(c, 60, 21, 60, '#c8e0ff');
     c.fillStyle = '#9ad0ff';
@@ -270,7 +414,7 @@ const SCENES: Record<string, (c: Ctx) => void> = {
     hills(c, 118, 1, '#0a1428', 2, 0.1);
   },
   // 10. 세이프존과 두 요원
-  '10': (c) => {
+  '11': (c) => {
     sky(c, ['#5a6a7a', '#6a7a88', '#7a8898', '#8a96a4']);
     c.fillStyle = 'rgba(150,230,255,0.25)';
     for (let x = 30; x <= 190; x++) {
@@ -288,7 +432,7 @@ const SCENES: Record<string, (c: Ctx) => void> = {
     person(c, 116, 120, '#c87aa8', 10);
   },
   // 11. 세계의 마지막 울음 (빛으로 감싸는 손들)
-  '11': (c) => {
+  'old-13': (c) => {
     sky(c, ['#1a1030', '#2a1a40', '#3a2a58', '#4a3a70']);
     glow(c, 110, 52, 40, '#ffd8f0');
     disc(c, 110, 52, 10, '#fff4fa');
@@ -301,7 +445,7 @@ const SCENES: Record<string, (c: Ctx) => void> = {
     for (let i = 0; i < 7; i++) person(c, 60 + i * 16, 118, i === 3 ? '#9ad0ff' : '#d8c8f0', 9 + (i % 2));
   },
   // 마지막 장. 바다를 처음 본 아이
-  last: (c) => {
+  '12': (c) => {
     sky(c, ['#ffd8b8', '#ffc8a8', '#f8b8a8', '#e8a8b0']);
     glow(c, 160, 62, 20, '#fff0c0');
     disc(c, 160, 62, 9, '#fff6d8');

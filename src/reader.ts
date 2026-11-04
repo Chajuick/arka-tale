@@ -1,5 +1,5 @@
 // 2D 읽기 화면: 자동 쪽 나누기 + 3D 페이지 넘김
-import { SERIES, bookById, isLocked, nextVolume, volOf, type BookDef } from './books';
+import { SERIES, bookById, categoryOf, isLocked, nextVolume, volOf, type BookDef } from './books';
 import { chapterArt, emblemDataURL } from './art';
 import { SCENE_BREAK, getChapter } from './content';
 import { coverCanvas } from './shelf';
@@ -104,7 +104,7 @@ export class Reader {
         const to = bookById(l.to);
         const locked = !to || isLocked(to);
         bl.push({
-          html: `<span class="bm-icon"></span><span>${l.text}</span><b>${locked ? '아직 쓰이지 않은 이야기' : '이어 읽기 →'}</b>`,
+          html: `<span class="bm-icon"></span><span>${l.text}</span><b>${locked ? '준비 중인 이야기' : '이어 읽기 →'}</b>`,
           cls: `bookmark${locked ? ' locked' : ''}" data-link="${l.to}`,
         });
       }
@@ -254,7 +254,7 @@ export class Reader {
       <h1>${b.title}</h1>
       <div class="tp-rule"></div>
       ${b.subtitle ? `<div class="tp-sub">${b.subtitle}</div>` : ''}
-      <div class="tp-vol">${vol ? `제 ${vol} 권` : '세계의 조각'}</div>
+      <div class="tp-vol">${vol ? `제 ${vol} 권` : categoryOf(b)}</div>
     </div>`;
   }
 

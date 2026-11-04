@@ -122,7 +122,7 @@ async function start() {
   const tip = $('tip');
   shelf.onHover = (b, x, y) => {
     if (!b) return tip.classList.add('hidden');
-    tip.innerHTML = `<b>${b.title}</b>${b.subtitle ? `<span>${b.subtitle}</span>` : ''}${isLocked(b) ? '<em>아직 쓰이지 않은 이야기</em>' : ''}`;
+    tip.innerHTML = `<b>${b.title}</b>${b.subtitle ? `<span>${b.subtitle}</span>` : ''}${isLocked(b) ? '<em>준비 중인 이야기</em>' : ''}`;
     tip.classList.remove('hidden');
     tip.style.left = `${Math.min(window.innerWidth - tip.offsetWidth - 12, x + 16)}px`;
     tip.style.top = `${y + 18}px`;
@@ -153,7 +153,7 @@ async function start() {
   // 책갈피: 다른 책으로 이어 읽기
   reader.onLink = async (id) => {
     const to = bookById(id);
-    if (!to || isLocked(to)) return toast('아직 쓰이지 않은 이야기예요');
+    if (!to || isLocked(to)) return toast('아직 준비 중인 이야기예요');
     linking = true;
     await reader.close();
     if (current) shelf.snapBack(current.id);

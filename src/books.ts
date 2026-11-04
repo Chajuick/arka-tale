@@ -1,10 +1,12 @@
 // 서재 구성 — 책장(CASES)과 책(BOOKS)
 //   책장을 추가하려면 CASES에 한 줄, 책을 추가하려면 BOOKS에 한 줄 (선반이 차면 자동으로 한 칸 늘어남)
 //   case: 꽂힐 책장 id (없으면 첫 책장) / shelf: 그 책장 안의 칸 key
-//   chapters: saga.md의 장 번호 ('last' = 마지막 장). 비어 있으면 잠긴 책 ("아직 쓰이지 않은 이야기")
+//   chapters: saga.md의 장 번호 ('last' = 마지막 장). 비어 있으면 잠긴 책 ("준비 중인 이야기")
+//   공개 범위: OPEN_SHELVES에 든 칸의 책만 읽을 수 있음 (나머지는 준비 중으로 잠김)
 //   links: 그 장이 끝난 뒤 다른 책으로 이어지는 책갈피
 
-export type ChapterRef = number | 'last';
+/** 큰 서사 장 번호(1, 2, …, 'last') 또는 개별 책의 장('dob-bob:1') */
+export type ChapterRef = number | 'last' | `${string}:${string}`;
 export type Emblem =
   | 'star' | 'orb' | 'mountain' | 'tear' | 'abyss' | 'rescue' | 'sea'
   | 'friends' | 'castle' | 'lantern' | 'dragon' | 'four' | 'shield' | 'brush';
@@ -44,74 +46,74 @@ export interface BookDef {
 export const SERIES = '아르카 테일';
 
 export const CASES: BookCase[] = [
-  {
-    id: 'arca',
-    title: '아르카 테일',
-    rows: [
-      { key: 'saga', label: '아르카 테일', tall: true },
-      { key: 'lore', label: '세계의 조각' },
-    ],
-  },
-  // 예시용 빈 책장 — 이름을 바꾸거나 지워도 됨
-  { id: 'next', title: '두 번째 책장', rows: [{ key: 'main', label: '두 번째 책장' }] },
+  // 맨 위: 큰 이야기
+  { id: 'arca', title: '아르카 테일', rows: [{ key: 'saga', label: '아르카 테일', tall: true }] },
+  // 가운데: 세계의 설정·조직·국가에 관한 이야기
+  { id: 'world', title: '세계의 조각들', rows: [{ key: 'world', label: '세계의 조각들' }] },
+  // 아래: 한 사람 한 사람의 이야기
+  { id: 'people', title: '빛나던 이들', rows: [{ key: 'people', label: '빛나던 이들' }] },
 ];
 
 export const BOOKS: BookDef[] = [
   // ── 윗칸: 큰 서사 (시대별) ──
   { id: 'saga-1', shelf: 'saga', title: '가장 아름다운 별', subtitle: '태초의 이야기', color: '#1d2a4f', emblem: 'star', chapters: [1] },
   {
-    id: 'saga-2', shelf: 'saga', title: '조율사의 시대', subtitle: '세상이 다시 눈을 뜬 날', color: '#24432f', emblem: 'orb', chapters: [2, 5],
-    links: [{ after: 2, to: 'dob-bob', text: '도브와 보브의 여정은 『도브와 보브』에서 이어집니다' }],
+    id: 'saga-2', shelf: 'saga', title: '조율사의 시대', subtitle: '세상이 다시 눈을 뜬 날', color: '#24432f', emblem: 'orb', chapters: [2, 3, 4, 5],
+    links: [{ after: 5, to: 'dob-bob', text: '도브와 보브의 여정은 『도브와 보브』에 더 자세히 기록되어 있습니다' }],
   },
   {
-    id: 'saga-3', shelf: 'saga', title: '평화의 산', subtitle: '아르카의 시대', color: '#4a3d63', emblem: 'mountain', chapters: [6],
-    links: [{ after: 6, to: 'arca', text: '여섯 가문의 이야기는 『아르카 대륙』에 기록되어 있습니다' }],
+    id: 'saga-3', shelf: 'saga', title: '평화의 산', subtitle: '아르카의 시대', color: '#4a3d63', emblem: 'mountain', chapters: [6, 7],
+    links: [{ after: 7, to: 'arca', text: '여섯 가문의 이야기는 『아르카 대륙』에 기록되어 있습니다' }],
   },
   {
-    id: 'saga-4', shelf: 'saga', title: '세계의 첫 번째 울음', subtitle: '재앙과 개화자', color: '#5c2230', emblem: 'tear', chapters: [7],
+    id: 'saga-4', shelf: 'saga', title: '세계의 첫 번째 울음', subtitle: '재앙과 개화자', color: '#5c2230', emblem: 'tear', chapters: [8, 9],
     links: [
-      { after: 7, to: 'sasin', text: '선인들의 이야기는 『사신』에서 이어집니다' },
-      { after: 7, to: 'hwangryong', text: '다섯 번째 선인의 이야기는 『황룡의 책』에' },
+      { after: 9, to: 'sasin', text: '선인들의 이야기는 『사신』에서 이어집니다' },
+      { after: 9, to: 'hwangryong', text: '다섯 번째 선인의 이야기는 『황룡의 책』에' },
     ],
   },
   {
-    id: 'saga-5', shelf: 'saga', title: '길을 잃은 사람들', subtitle: '심연과 길잡이', color: '#22284f', emblem: 'abyss', chapters: [8],
-    links: [
-      { after: 8, to: 'aurora', text: '오로라의 여정은 『푸른 길잡이』에서 이어집니다' },
-      { after: 8, to: 'amane', text: '다른 길잡이들의 이야기: 『백색 길잡이』 『황색 길잡이』 『녹색 길잡이』' },
-    ],
+    id: 'saga-5', shelf: 'saga', title: '재앙이 남긴 세계', subtitle: '상처와 함께 살아가는 법', color: '#22284f', emblem: 'abyss', chapters: [10],
+    links: [{ after: 10, to: 'aurora', text: '선인들이 물러난 뒤, 심연으로 들어간 황룡과 길잡이들의 이야기는 『푸른 길잡이 오로라』에 남아 있습니다' }],
   },
   {
-    id: 'saga-6', shelf: 'saga', title: '푸른구원', subtitle: '기억하는 아이와 자신을 지키는 아이', color: '#1f4d5a', emblem: 'rescue', chapters: [10],
+    id: 'saga-6', shelf: 'saga', title: '푸른구원', subtitle: '기억하는 아이와 자신을 지키는 아이', color: '#1f4d5a', emblem: 'rescue', chapters: [11],
     links: [
-      { after: 10, to: 'doyun', text: '도윤의 이야기는 『도윤의 책』에' },
-      { after: 10, to: 'seoyun', text: '서윤의 이야기는 『서윤의 책』에' },
+      { after: 11, to: 'doyun', text: '도윤의 이야기는 『도윤의 책』에' },
+      { after: 11, to: 'seoyun', text: '서윤의 이야기는 『서윤의 책』에' },
     ],
   },
-  { id: 'saga-7', shelf: 'saga', title: '다시, 가장 아름다운 별', subtitle: '세계의 마지막 울음', color: '#265f84', emblem: 'sea', chapters: [11, 'last'] },
+  { id: 'saga-7', shelf: 'saga', title: '다시, 가장 아름다운 별', subtitle: '또 하나의 새로운 이야기', color: '#265f84', emblem: 'sea', chapters: [12] },
 
-  // ── 아랫칸: 세계의 조각 (계속 추가 가능) ──
-  { id: 'dob-bob', shelf: 'lore', title: '도브와 보브', subtitle: '모르는 아이와 모든 것을 알려는 아이', color: '#6b4a2b', emblem: 'friends', chapters: [3, 4] },
-  { id: 'arca', shelf: 'lore', title: '아르카 대륙', subtitle: '여섯 가문의 기록', color: '#5f6070', emblem: 'castle' },
-  { id: 'amane', shelf: 'lore', title: '백색 길잡이 아마네', color: '#e8e2d2', ink: '#3a3530', emblem: 'lantern', emblemColor: '#ffffff' },
-  { id: 'lingsha', shelf: 'lore', title: '황색 길잡이 링샤', color: '#c49a2a', ink: '#2e2210', emblem: 'lantern', emblemColor: '#fff1a8' },
-  { id: 'yeonhwa', shelf: 'lore', title: '녹색 길잡이 연화', color: '#3c7848', emblem: 'lantern', emblemColor: '#b8f0a0' },
-  { id: 'hwangryong', shelf: 'lore', title: '황룡의 책', subtitle: '아이들을 가르치던 선인', color: '#a8781c', ink: '#2a1c08', emblem: 'dragon' },
-  { id: 'aurora', shelf: 'lore', title: '푸른 길잡이 오로라', subtitle: '두 명의 오로라', color: '#2f6cbf', emblem: 'lantern', emblemColor: '#a8e0ff', chapters: [9] },
-  { id: 'sasin', shelf: 'lore', title: '사신', subtitle: '남은 네 명의 선인', color: '#3a3043', emblem: 'four' },
-  { id: 'doyun', shelf: 'lore', title: '도윤의 책', subtitle: '자신을 지키는 아이', color: '#45566a', emblem: 'shield' },
-  { id: 'seoyun', shelf: 'lore', title: '서윤의 책', subtitle: '기억하는 아이', color: '#8a5a7c', emblem: 'brush' },
+  // ── 가운데 칸: 세계의 조각들 (설정·조직·국가) ──
+  { id: 'arca', shelf: 'world', title: '아르카 대륙', subtitle: '여섯 가문의 기록', color: '#5f6070', emblem: 'castle' },
+  { id: 'sasin', shelf: 'world', title: '사신', subtitle: '남은 네 명의 선인', color: '#3a3043', emblem: 'four' },
+
+  // ── 아래 칸: 빛나던 이들 (인물 이야기) ──
+  { id: 'dob-bob', shelf: 'people', title: '도브와 보브', subtitle: '모르는 아이와 모든 것을 알려는 아이', color: '#6b4a2b', emblem: 'friends', chapters: ['dob-bob:1', 'dob-bob:2', 'dob-bob:3'] },
+  { id: 'amane', shelf: 'people', title: '백색 길잡이 아마네', color: '#e8e2d2', ink: '#3a3530', emblem: 'lantern', emblemColor: '#ffffff' },
+  { id: 'lingsha', shelf: 'people', title: '황색 길잡이 링샤', color: '#c49a2a', ink: '#2e2210', emblem: 'lantern', emblemColor: '#fff1a8' },
+  { id: 'yeonhwa', shelf: 'people', title: '녹색 길잡이 연화', color: '#3c7848', emblem: 'lantern', emblemColor: '#b8f0a0' },
+  { id: 'hwangryong', shelf: 'people', title: '황룡의 책', subtitle: '아이들을 가르치던 선인', color: '#a8781c', ink: '#2a1c08', emblem: 'dragon' },
+  { id: 'aurora', shelf: 'people', title: '푸른 길잡이 오로라', subtitle: '두 명의 오로라', color: '#2f6cbf', emblem: 'lantern', emblemColor: '#a8e0ff', chapters: ['aurora:1', 'aurora:2'] },
+  { id: 'doyun', shelf: 'people', title: '도윤의 책', subtitle: '자신을 지키는 아이', color: '#45566a', emblem: 'shield' },
+  { id: 'seoyun', shelf: 'people', title: '서윤의 책', subtitle: '기억하는 아이', color: '#8a5a7c', emblem: 'brush' },
 ];
 
-/** 큰 서사 권 번호 (1부터). 세계의 조각 책이면 0 */
+/** 큰 서사 권 번호 (1부터). 다른 칸의 책이면 0 */
 export const volOf = (b: BookDef) => (b.shelf === 'saga' ? BOOKS.filter((x) => x.shelf === 'saga').indexOf(b) + 1 : 0);
-/** 큰 서사의 다음 권 (마지막 권·세계의 조각이면 없음) */
+/** 큰 서사의 다음 권 (마지막 권·다른 칸의 책이면 없음) */
 export const nextVolume = (b: BookDef) => {
   const v = volOf(b);
   if (!v) return undefined;
   const next = BOOKS.filter((x) => x.shelf === 'saga')[v];
   return next && !isLocked(next) ? next : undefined;
 };
-export const caseOf = (b: BookDef) => b.case ?? CASES[0].id;
+/** 책이 꽂힌 칸(책장 구역): 따로 지정하지 않으면 shelf 키로 찾음 */
+export const caseOf = (b: BookDef) => b.case ?? (CASES.find((c) => c.rows.some((r) => r.key === b.shelf)) ?? CASES[0]).id;
+/** 칸 이름 (표지·속표지 아래에 표시) */
+export const categoryOf = (b: BookDef) => CASES.find((c) => c.id === caseOf(b))!.title;
 export const bookById = (id: string) => BOOKS.find((b) => b.id === id);
-export const isLocked = (b: BookDef) => !b.chapters || b.chapters.length === 0;
+/** 공개한 칸. 지금은 아르카 테일(큰 이야기)만 공개하고, 나머지 칸의 책은 준비 중 */
+export const OPEN_SHELVES = new Set(['saga']);
+export const isLocked = (b: BookDef) => !OPEN_SHELVES.has(b.shelf) || !b.chapters || b.chapters.length === 0;

@@ -1,6 +1,6 @@
 // 3D 책장: 툰 로우폴리 + 외곽선. 책 목록에 맞춰 선반이 자동으로 늘어남
 import * as THREE from 'three';
-import { BOOKS, CASES, SERIES, caseOf, isLocked, volOf, type BookCase, type BookDef } from './books';
+import { BOOKS, CASES, SERIES, caseOf, categoryOf, isLocked, volOf, type BookCase, type BookDef } from './books';
 import { drawEmblem } from './art';
 
 const DEPTH = 1.5; // 책 앞뒤 길이 (= 표지 가로)
@@ -176,8 +176,8 @@ export function coverCanvas(b: BookDef, w = 360, h = 520) {
     c.fillStyle = shade(ink, 0.8);
     c.fillText(b.subtitle, w / 2, h * 0.63 + 46);
   }
-  // 아래: 권 번호 / 세계의 조각
-  const foot = volOf(b) ? `제 ${volOf(b)} 권` : '세계의 조각';
+  // 아래: 권 번호 / 칸 이름
+  const foot = volOf(b) ? `제 ${volOf(b)} 권` : categoryOf(b);
   c.font = PIXEL;
   c.fillStyle = gold;
   c.fillText(foot, w / 2, h - 58);
@@ -441,8 +441,9 @@ export class Shelf {
     const fovV = THREE.MathUtils.degToRad(this.camera.fov);
     const fovH = 2 * Math.atan(Math.tan(fovV / 2) * this.camera.aspect);
     const needW = INNER_W + 1.6;
-    const first = this.cases[0];
-    const viewH = Math.min(first.top - first.bottom + 1.8, 7.6);
+    // 보이는 높이: 책장 전체가 낮으면 전체, 아니면 큰 이야기 칸 + 다음 칸 일부가 보이는 정도로 고정
+    const stackH = this.cases[0].top - this.cases[this.cases.length - 1].bottom;
+    const viewH = Math.min(stackH + 1.8, 7.6);
     const dist = Math.max(needW / 2 / Math.tan(fovH / 2), viewH / 2 / Math.tan(fovV / 2));
     this.camBase.set(0, 0, dist + DEPTH / 2);
     this.visibleH = 2 * dist * Math.tan(fovV / 2);
