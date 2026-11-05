@@ -1,4 +1,5 @@
 import { defineConfig, type Plugin } from 'vite';
+import { textLibrary } from './scripts/text-library';
 
 /**
  * 공유 미리보기(OG)·canonical에는 절대 주소가 필요해서 빌드 시 %SITE_URL%을 채움
@@ -18,5 +19,5 @@ const siteUrl = (): Plugin => ({
 export default defineConfig({
   base: '/',
   server: { port: 5174 },
-  plugins: [siteUrl()],
+  plugins: [siteUrl(), textLibrary(SITE_URL.replace(/\/$/, ''))],
 });
